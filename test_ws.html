@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Workflow Engine — WebSocket Test</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding: 18px; }
+    h1 { margin: 0 0 12px 0; font-size: 20px; }
+    .row { margin: 8px 0; display: flex; gap: 8px; align-items: center; }
+    textarea { width: 720px; height: 120px; font-family: monospace; }
+    input[type="text"], input[type="number"] { width: 360px; padding:6px; }
+    button { padding: 6px 10px; }
+    #out { background:#0b1220; color:#e6eef6; padding:12px; height: 360px; overflow:auto; white-space:pre-wrap; border-radius:6px; }
+    .log-entry { margin:6px 0; padding:6px; border-radius:6px; }
+    .level-info { background:#07172a; color:#9fe0ff; border-left:4px solid #1aa3ff; }
+    .level-warn { background:#2b1d00; color:#ffd58c; border-left:4px solid #ffb14d; }
+    .level-error { background:#2a0000; color:#ffb3b3; border-left:4px solid #ff6b6b; }
+    .meta { font-size:12px; color:#9fb0c2; }
+    .preview { font-size:13px; color:#dbefff; margin-top:4px; }
+    #final { margin-top:12px; padding:10px; background:#f6f8fa; border-radius:6px; color:#111; max-width:760px; }
+  </style>
+</head>
+<body>
+  <h1>Workflow Engine — WebSocket Tester</h1>
+
+  <div class="row">
+    <button id="createGraph">Create Graph (option_b)</button>
+    <label style="font-size:13px;">graph_id:</label>
+    <input id="graphId" type="text" placeholder="Paste graph_id here (or click Create Graph)"/>
+  </div>
+
+  <div class="row">
+    <label>max_length:</label>
+    <input id="maxLength" type="number" value="60" min="1"/>
+    <label>selected_chunk_index (optional):</label>
+    <input id="selectedIndex" type="number" placeholder="e.g. 0"/>
+    <button id="connectWs">Connect & Run (WS)</button>
+    <button id="disconnectWs" disabled>Disconnect</button>
+  </div>
+
+  <div class="row">
+    <label>Input text (paragraphs separated by blank lines):</label>
+  </div>
+  <div class="row">
+    <textarea id="inputText">Paste a long article here with multiple paragraphs (separate paragraphs with blank lines).</textarea>
+  </div>
+
+  <div class="row">
+    <button id="sendRun">Send Run (already connected)</button>
+    <button id="clearOut">Clear Output</button>
+  </div>
+
+  <h2 style="font-size:16px;margin-top:12px;">Streamed logs</h2>
+  <div id="out"></div>
+
+  <div id="final" style="display:none">
+    <strong>Final state (finished):</strong>
+    <pre id="finalJson" style="white-space:pre-wrap"></pre>
+  </div>
+
+<script>
+const out = document.getElementById('out');
+const graphIdInput = document.getElementById('graphId');
+const createBtn = document.getElementById('createGraph');
+const connectBtn = document.getElementById('connectWs');
+const disconnectBtn = document.getElementById('disconnectWs');
+const sendBtn = document.getElementById('sendRun');
+const clearBtn = document.getElementById('clearOut');
+const inputText = document.getElementById('inputText');
+const maxLength = document.getElementById('maxLength');
+const selectedIndex = document.getElementById('selectedIndex');
+const finalBox = document.getElementById('final');
+const finalJson = document.getElementById('finalJson');
+
+let ws = null;
+
+function appendLog(entry) {
+  const container = document.createElement('div');
+  container.className = 'log-entry ' + (entry.level ? ('level-' + entry.level) : 'level-info');
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  meta.textContent = `[${entry.ts || new Date().toISOString()}] ${entry.node || ''} — ${entry.level || 'info'}`;
+  const msg = document.createElement('div');
+  msg.textContent = entry.msg || '';
+  const preview = document.createElement('div');
+  preview.className = 'preview';
+  preview.textContent = entry.preview || '';
+  container.appendChild(meta);
+  container.appendChild(msg);
+  if (entry.preview) container.appendChild(preview);
+  out.appendChild(container);
+  out.scrollTop = out.scrollHeight;
+}
+
+createBtn.onclick = async () => {
+  try {
+    const r = await fetch('http://127.0.0.1:8000/graph/create', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ type: 'option_b' })
+    });
+
+    const j = await r.json();
+    if (j.graph_id) {
+      graphIdInput.value = j.graph_id;
+      appendLog({ ts: new Date().toISOString(), node: 'client', level:'info', msg: 'Created graph_id', preview: j.graph_id });
+    } else {
+      appendLog({ ts:new Date().toISOString(), node:'client', level:'error', msg: 'Create graph did not return graph_id', preview: JSON.stringify(j) });
+    }
+  } catch(e) {
+    appendLog({ ts:new Date().toISOString(), node:'client', level:'error', msg: 'Create graph failed', preview: String(e) });
+  }
+};
+
+connectBtn.onclick = () => {
+  if (!graphIdInput.value) {
+    appendLog({ ts:new Date().toISOString(), node:'client', level:'warn', msg:'Please supply a graph_id first (or click Create Graph)'});
+    return;
+  }
+  startWS();
+};
+
+disconnectBtn.onclick = () => {
+  if (ws) ws.close();
+};
+
+sendBtn.onclick = () => {
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    appendLog({ ts:new Date().toISOString(), node:'client', level:'warn', msg:'Not connected — click Connect & Run first or use Send after connected.'});
+    return;
+  }
+  sendRun();
+};
+
+clearBtn.onclick = () => {
+  out.innerHTML = '';
+  finalBox.style.display = 'none';
+  finalJson.textContent = '';
+};
+
+function startWS() {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    appendLog({ ts:new Date().toISOString(), node:'client', level:'info', msg:'Already connected' });
+    return;
+  }
+  const url = (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.hostname + ':8000/ws/run';
+  ws = new WebSocket(url);
+
+  ws.onopen = () => {
+    appendLog({ ts:new Date().toISOString(), node:'client', level:'info', msg:'WebSocket connected to ' + url });
+    connectBtn.disabled = true;
+    disconnectBtn.disabled = false;
+    // automatically send run once connected
+    sendRun();
+  };
+
+  ws.onmessage = (ev) => {
+    try {
+      const msg = JSON.parse(ev.data);
+      if (msg.event === 'step') {
+        // show the single structured log_entry (if present)
+        if (msg.log_entry) appendLog(msg.log_entry);
+        else appendLog({ ts:new Date().toISOString(), node: msg.node || 'step', level:'info', msg: JSON.stringify(msg) });
+      } else if (msg.event === 'finished') {
+        appendLog({ ts:new Date().toISOString(), node:'client', level:'info', msg:'Received finished event' });
+        finalBox.style.display = 'block';
+        finalJson.textContent = JSON.stringify(msg.final_state, null, 2);
+        // keep the connection open (or close if you want)
+        ws.close();
+      } else if (msg.event === 'error') {
+        appendLog({ ts:new Date().toISOString(), node:'server', level:'error', msg: msg.message || 'error' });
+      } else {
+        appendLog({ ts:new Date().toISOString(), node:'server', level:'info', msg: JSON.stringify(msg) });
+      }
+    } catch (e) {
+      appendLog({ ts:new Date().toISOString(), node:'client', level:'error', msg:'Failed to parse message', preview: ev.data });
+    }
+  };
+
+  ws.onclose = () => {
+    appendLog({ ts:new Date().toISOString(), node:'client', level:'info', msg:'WebSocket closed' });
+    connectBtn.disabled = false;
+    disconnectBtn.disabled = true;
+  };
+
+  ws.onerror = (e) => {
+    appendLog({ ts:new Date().toISOString(), node:'client', level:'error', msg:'WebSocket error', preview: String(e) });
+  };
+}
+
+function sendRun() {
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    appendLog({ ts:new Date().toISOString(), node:'client', level:'warn', msg:'WebSocket not open' });
+    return;
+  }
+  const payload = {
+    graph_id: graphIdInput.value.trim(),
+    input_text: inputText.value,
+    max_length: parseInt(maxLength.value || "200", 10),
+  };
+  const si = selectedIndex.value;
+  if (si !== '') payload.selected_chunk_index = parseInt(si, 10);
+  ws.send(JSON.stringify(payload));
+  appendLog({ ts:new Date().toISOString(), node:'client', level:'info', msg:'Sent run request', preview: `max_length=${payload.max_length}` });
+}
+</script>
+</body>
+</html>
