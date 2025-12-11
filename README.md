@@ -7,6 +7,6 @@ This project implements a node‑based workflow engine designed to summarize lon
 >Per‑chunk summarization
 >Summary merging
 >Refinement
->Length enforcement
+Length enforcement
 >WebSocket streaming for real‑time logs
 It also includes a lightweight HTML WebSocket tester UI to observe logs and workflow results.
