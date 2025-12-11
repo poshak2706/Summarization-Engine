@@ -75,5 +75,11 @@ GET /graph/state/{run_id}: Fetches final or intermediate workflow state.
 
 WebSocket: ws://127.0.0.1:8000/ws/run: Streams live workflow logs and final result.
 
+**Future Enhancements:**
+
+1. LLM-based summarization 
+2. Multi-language support
+3. Better chunking strategy
+4. Frontend UI enhancements
 
 
