@@ -82,4 +82,5 @@ WebSocket: ws://127.0.0.1:8000/ws/run: Streams live workflow logs and final resu
 3. Better chunking strategy
 4. Frontend UI enhancements
 
-
+**OUTPUT SCREENSHOTS**
+![Graph ID](docs/images/Graph_ID.png)
