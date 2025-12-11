@@ -14,18 +14,6 @@ This project implements a node‑based workflow engine designed to summarize lon
 	
 It also includes a lightweight HTML WebSocket tester UI to observe logs and workflow results.
 
-**Features:**
-
-	>Smart text splitting (paragraph-based)
-	>Chunk‑wise summarization
-	>Merged summary generation
-	>Final summary refinement
-	>Max‑length enforcement
-	>User-defined length
-	>Live WebSocket logs (step-by-step workflow execution)
-	>Pluggable workflow nodes
-	>FastAPI + WebSocket API
-	>Included WebSocket testing UI (test_ws.html)
 **Project Structure:**
 
 	Summarization-Engine/
@@ -42,4 +30,50 @@ It also includes a lightweight HTML WebSocket tester UI to observe logs and work
 	├── .gitignore
 	├── README.md
 	└── (venv ignored)
+**Installation:**
+
+1. Clone the repository:
+   
+	   	git clone https://github.com/poshak2706/Summarization-Engine.git
+		cd Summarization-Engine
+2. Create & activate a virtual environment:
+	
+		python -m venv .venv
+		source .venv/bin/activate     # Mac/Linux
+		.venv\Scripts\activate        # Windows
+3. Install dependencies:
+   
+		pip install -r requirements.txt
+
+**Running the Backend:**
+
+Start the FastAPI server:
+
+	uvicorn app.main:app --reload
+	
+The API will run at:
+
+	http://127.0.0.1:8000
+
+After starting the FastAPI server, open:
+
+	test_ws.html
+
+Or host it locally:
+
+	python -m http.server 8001
+Open:
+
+	http://127.0.0.1:8001/test_ws.html
+
+
+**API Endpoints:**
+
+POST /graph/run: Runs the workflow via normal HTTP.
+
+GET /graph/state/{run_id}: Fetches final or intermediate workflow state.
+
+WebSocket: ws://127.0.0.1:8000/ws/run: Streams live workflow logs and final result.
+
+
 
