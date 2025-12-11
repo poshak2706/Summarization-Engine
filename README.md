@@ -88,17 +88,21 @@ _UI with Graph ID:_
 
 ![Graph ID](docs/images/Graph_ID.png)
 
+
 _Sample Input:_
 
 ![Example_Input](docs/images/Example_Input.png)
+
 
 _Sample State Logs:_
 
 ![UI_Logs](docs/images/UI_Logs.png)
 
+
 _Sample Final State:_
 
 ![Final_State](docs/images/Final_State.png)
+
 
 _Final State Logs:_
 
