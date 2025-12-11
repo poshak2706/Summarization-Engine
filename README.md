@@ -34,7 +34,7 @@ It also includes a lightweight HTML WebSocket tester UI to observe logs and work
 
 1. Clone the repository:
    
-	   	git clone https://github.com/poshak2706/Summarization-Engine.git
+		git clone https://github.com/poshak2706/Summarization-Engine.git
 		cd Summarization-Engine
 2. Create & activate a virtual environment:
 	
@@ -47,24 +47,24 @@ It also includes a lightweight HTML WebSocket tester UI to observe logs and work
 
 **Running the Backend:**
 
-Start the FastAPI server:
+1. Start the FastAPI server:
 
-	uvicorn app.main:app --reload
+		uvicorn app.main:app --reload
 	
-The API will run at:
+2. The API will run at:
 
-	http://127.0.0.1:8000
+		http://127.0.0.1:8000
 
-After starting the FastAPI server, open:
+3. After starting the FastAPI server, open:
 
-	test_ws.html
+		test_ws.html
 
-Or host it locally:
+	Or host it locally:
 
-	python -m http.server 8001
-Open:
+		python -m http.server 8001
+4. Open:
 
-	http://127.0.0.1:8001/test_ws.html
+		http://127.0.0.1:8001/test_ws.html
 
 
 **API Endpoints:**
