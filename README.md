@@ -85,7 +85,24 @@ WebSocket: ws://127.0.0.1:8000/ws/run: Streams live workflow logs and final resu
 **OUTPUT SCREENSHOTS:**
 
 _UI with Graph ID:_
+
 ![Graph ID](docs/images/Graph_ID.png)
+
+_Sample Input:_
+
+![Example_Input](docs/images/Example_Input.png)
+
+_Sample State Logs:_
+
+![UI_Logs](docs/images/UI_Logs.png)
+
+_Sample Final State:_
+
+![Final_State](docs/images/Final_State.png)
+
+_Final State Logs:_
+
+![Final_State_Logs](docs/images/Final_State_Logs.png)
 
 
 
