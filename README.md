@@ -3,7 +3,7 @@ A modular FastAPI‑based workflow engine that performs multi‑step text summar
 
 **Overview**
 This project implements a node‑based workflow engine designed to summarize long text inputs through multiple processing steps:
-	Text chunking
+	>Text chunking
 	Per‑chunk summarization
 	Summary merging
 	Refinement
