@@ -22,8 +22,23 @@ It also includes a lightweight HTML WebSocket tester UI to observe logs and work
 	>Final summary refinement
 	>Max‑length enforcement
 	>User-defined length
-	>Automatic fallback (len(text) // 3, min=20)
 	>Live WebSocket logs (step-by-step workflow execution)
 	>Pluggable workflow nodes
 	>FastAPI + WebSocket API
 	>Included WebSocket testing UI (test_ws.html)
+**Project Structure:**
+	Summarization-Engine/
+	│
+	├── app/
+	│   ├── main.py          # FastAPI app & routes
+	│   ├── engine.py        # Workflow engine core
+	│   ├── workflows.py     # All workflow nodes
+	│   ├── models.py        # Pydantic schemas
+	│   └── __init__.py
+	│
+	├── test_ws.html         # WebSocket Tester UI
+	├── requirements.txt     # Python dependencies
+	├── .gitignore
+	├── README.md
+	└── (venv ignored)
+
