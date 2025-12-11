@@ -27,6 +27,7 @@ It also includes a lightweight HTML WebSocket tester UI to observe logs and work
 	>FastAPI + WebSocket API
 	>Included WebSocket testing UI (test_ws.html)
 **Project Structure:**
+
 	Summarization-Engine/
 	│
 	├── app/
