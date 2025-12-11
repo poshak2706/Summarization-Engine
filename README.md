@@ -5,12 +5,12 @@ A modular FastAPI‑based workflow engine that performs multi‑step text summar
 
 This project implements a node‑based workflow engine designed to summarize long text inputs through multiple processing steps:
 
-	- Text chunking
-	- Per‑chunk summarization
-	- Summary merging
-	- Refinement
-	- Length enforcement
-	- WebSocket streaming for real‑time logs
+1. Text chunking
+2. Per‑chunk summarization
+3. Summary merging
+4. Refinement
+5. Length enforcement
+6. WebSocket streaming for real‑time logs
 	
 It also includes a lightweight HTML WebSocket tester UI to observe logs and workflow results.
 
